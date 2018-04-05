@@ -2,13 +2,30 @@ import requests
 from bs4 import BeautifulSoup
 
 
-user_search_url = input()
-try:
+def is_url(request):
+    try:
+        requests.get(request)
+    except requests.exceptions.MissingSchema:
+        return False
+    return True
+
+
+def create_request_url(request):
+    key_words = request.split()
+    key_words_sting = ''
+    for key_word in key_words:
+        key_words_sting += '+%s' % key_word
+    user_search = 'https://stackoverflow.com/search?q=%s' % key_words_sting[1:]
+    return user_search
+
+user_search = input()
+if is_url(user_search):
+    response = requests.get(user_search).content
+else:
+    user_search_url = create_request_url(user_search)
     response = requests.get(user_search_url).content
-except requests.exceptions.MissingSchema:
-    print("Sorry, you entered wrong url")
-    exit()
-soup = BeautifulSoup(request_html, 'html.parser')
+
+soup = BeautifulSoup(response, 'html.parser')
 links = soup.find_all('div', 'result-link')
 for link in links:
-    print('https:%s' % link.a['href'])
+    print('https://stackoverflow.com%s' % link.a['href'])
